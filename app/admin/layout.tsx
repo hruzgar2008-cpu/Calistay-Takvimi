@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Calendar, 
@@ -30,7 +30,18 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
+  async function handleLogout() {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    router.replace('/admin/login');
+    router.refresh();
+  }
 
   return (
     <div className="flex min-h-screen bg-muted/30">
@@ -51,7 +62,7 @@ export default function AdminLayout({
         <div className="flex h-16 items-center justify-between border-b border-border px-6">
           <Link href="/admin" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <span className="text-sm font-bold text-primary-foreground">A</span>
+              <span className="text-sm font-bold text-primary-foreground">Ç</span>
             </div>
             <span className="font-bold">Admin Panel</span>
           </Link>
@@ -89,11 +100,19 @@ export default function AdminLayout({
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-border p-4">
+        <div className="space-y-1 border-t border-border p-4">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-muted-foreground"
+            type="button"
+            onClick={() => void handleLogout()}
+          >
+            <LogOut className="mr-3 h-5 w-5" />
+            Guvenli cikis
+          </Button>
           <Button variant="ghost" className="w-full justify-start text-muted-foreground" asChild>
             <Link href="/">
-              <LogOut className="mr-3 h-5 w-5" />
-              Siteye Don
+              Siteyi goruntule
             </Link>
           </Button>
         </div>
