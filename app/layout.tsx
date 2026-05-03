@@ -14,7 +14,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'Atolye.co - Lise Ogrencileri Icin Atolye ve Etkinlik Platformu',
+  title: 'Çalıştay Takvimi - Lise Öğrencileri İçin Çalıştay ve Etkinlik Platformu',
   description: 'Lise ogrencileri icin atolye, konferans ve egitim etkinliklerini kesfet, katil ve ogrenmeye basla.',
   generator: 'v0.app',
   icons: {

@@ -10,9 +10,9 @@ export function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <span className="text-lg font-bold text-primary-foreground">A</span>
+                <span className="text-lg font-bold text-primary-foreground">Ç</span>
               </div>
-              <span className="text-xl font-bold tracking-tight">Atolye.co</span>
+              <span className="text-xl font-bold tracking-tight">Çalıştay Takvimi</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Lise ogrencileri icin atolye ve etkinlik kesfetme platformu.
@@ -37,7 +37,7 @@ export function Footer() {
                 <Twitter className="h-4 w-4" />
               </a>
               <a 
-                href="mailto:info@atolye.co"
+                href="mailto:iletisim@calistaytakvimi.com"
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
                 aria-label="Email"
               >
@@ -97,7 +97,7 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Atolye.co. Tum haklari saklidir.
+            &copy; {new Date().getFullYear()} Çalıştay Takvimi. Tum haklari saklidir.
           </p>
           <p className="text-sm text-muted-foreground">
             Turkiye&apos;deki genc yetenekler icin yapildi.
