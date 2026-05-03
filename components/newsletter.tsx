@@ -41,7 +41,7 @@ export function Newsletter() {
           {isSubmitted ? (
             <div className="flex items-center justify-center gap-2 rounded-lg bg-white/20 px-6 py-4">
               <CheckCircle className="h-5 w-5" />
-              <span className="font-medium">Basariyla kayit oldunuz!</span>
+              <span className="font-medium">Tesekkurler, yeni etkinliklerden haberdar olacaksiniz!</span>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
