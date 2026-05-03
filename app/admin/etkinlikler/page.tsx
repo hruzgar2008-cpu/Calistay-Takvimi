@@ -23,18 +23,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { sampleEvents } from '@/lib/data';
+import { useMergedEvents } from '@/hooks/use-merged-events';
+import { deleteCustomEventById } from '@/lib/event-storage';
 
 export default function AdminEventsPage() {
   const [search, setSearch] = useState('');
+  const allEvents = useMergedEvents(sampleEvents);
 
-  const filteredEvents = sampleEvents.filter((event) =>
-    event.title.toLowerCase().includes(search.toLowerCase()) ||
-    event.city.toLowerCase().includes(search.toLowerCase())
+  const filteredEvents = allEvents.filter(
+    (event) =>
+      event.title.toLowerCase().includes(search.toLowerCase()) ||
+      event.city.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Etkinlikler</h1>
@@ -48,7 +51,6 @@ export default function AdminEventsPage() {
         </Button>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -61,14 +63,11 @@ export default function AdminEventsPage() {
                 className="pl-10"
               />
             </div>
-            <p className="text-sm text-muted-foreground">
-              {filteredEvents.length} etkinlik
-            </p>
+            <p className="text-sm text-muted-foreground">{filteredEvents.length} etkinlik</p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Table */}
       <Card>
         <CardHeader>
           <CardTitle>Etkinlik Listesi</CardTitle>
@@ -81,67 +80,76 @@ export default function AdminEventsPage() {
                 <TableHead className="hidden sm:table-cell">Sehir</TableHead>
                 <TableHead className="hidden md:table-cell">Tarih</TableHead>
                 <TableHead className="hidden lg:table-cell">Kurum</TableHead>
-                <TableHead className="hidden lg:table-cell">Durum</TableHead>
+                <TableHead className="hidden lg:table-cell">Kaynak</TableHead>
                 <TableHead className="text-right">Islemler</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEvents.map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {event.isFeatured && (
-                        <Star className="h-4 w-4 fill-primary text-primary" />
-                      )}
-                      <span className="font-medium">{event.title}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {event.city}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {new Date(event.startDate).toLocaleDateString('tr-TR')}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {event.institution}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <Badge variant="secondary">Aktif</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Islemler</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/etkinlik/${event.slug}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Goruntule
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/etkinlikler/yeni?duzenle=${event.slug}`}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Duzenle
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => alert(`"${event.title}" silme islemi demo modunda.`)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Sil
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredEvents.map((event) => {
+                const isCustom = event.id.startsWith('custom-');
+                return (
+                  <TableRow key={event.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {event.isFeatured && (
+                          <Star className="h-4 w-4 fill-primary text-primary" />
+                        )}
+                        <span className="font-medium">{event.title}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">{event.city}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {new Date(event.startDate).toLocaleDateString('tr-TR')}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">{event.institution}</TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Badge variant={isCustom ? 'default' : 'secondary'}>
+                        {isCustom ? 'Senin ekledigin' : 'Ornek'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Islemler</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/etkinlik/${event.slug}`}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Goruntule
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/etkinlikler/yeni?duzenle=${event.slug}`}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Duzenle
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => {
+                              if (isCustom) {
+                                deleteCustomEventById(event.id);
+                              } else {
+                                alert(
+                                  'Ornek etkinlikler sabit veridir; silmek icin kalici bir veritabani baglantisi gerekir.',
+                                );
+                              }
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Sil
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
