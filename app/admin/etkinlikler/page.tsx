@@ -24,7 +24,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { sampleEvents } from '@/lib/data';
 import { useMergedEvents } from '@/hooks/use-merged-events';
-import { deleteCustomEventById } from '@/lib/event-storage';
+import { notifyEventsChanged } from '@/lib/event-storage';
+import { isDatabaseEventId } from '@/lib/event-id';
 
 export default function AdminEventsPage() {
   const [search, setSearch] = useState('');
@@ -86,7 +87,7 @@ export default function AdminEventsPage() {
             </TableHeader>
             <TableBody>
               {filteredEvents.map((event) => {
-                const isCustom = event.id.startsWith('custom-');
+                const fromDb = isDatabaseEventId(event.id);
                 return (
                   <TableRow key={event.id}>
                     <TableCell>
@@ -103,8 +104,8 @@ export default function AdminEventsPage() {
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">{event.institution}</TableCell>
                     <TableCell className="hidden lg:table-cell">
-                      <Badge variant={isCustom ? 'default' : 'secondary'}>
-                        {isCustom ? 'Senin ekledigin' : 'Ornek'}
+                      <Badge variant={fromDb ? 'default' : 'secondary'}>
+                        {fromDb ? 'Veritabani' : 'Ornek'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -131,14 +132,23 @@ export default function AdminEventsPage() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => {
-                              if (isCustom) {
-                                deleteCustomEventById(event.id);
-                              } else {
+                            onClick={async () => {
+                              if (!fromDb) {
                                 alert(
-                                  'Ornek etkinlikler sabit veridir; silmek icin kalici bir veritabani baglantisi gerekir.',
+                                  'Ornek etkinlikler koddaki sabit veridir. Silmek icin Supabase kayitlarini kullanin.',
                                 );
+                                return;
                               }
+                              const res = await fetch(
+                                `/api/events?id=${encodeURIComponent(event.id)}`,
+                                { method: 'DELETE' },
+                              );
+                              const data = (await res.json()) as { error?: string };
+                              if (!res.ok) {
+                                alert(data.error ?? 'Silinemedi.');
+                                return;
+                              }
+                              notifyEventsChanged();
                             }}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { cities, levels } from '@/lib/data';
 import { slugifyTurkish } from '@/lib/blog-storage';
-import { appendCustomEvent } from '@/lib/event-storage';
+import { notifyEventsChanged } from '@/lib/event-storage';
 import type { Event } from '@/lib/types';
 
 const DEFAULT_BANNER = '/images/events/coding.jpg';
@@ -88,8 +88,7 @@ export default function NewEventPage() {
     if (twitter.trim()) social.twitter = twitter.trim();
     if (website.trim()) social.website = website.trim();
 
-    const newEvent: Event = {
-      id: `custom-${Date.now()}`,
+    const payload: Omit<Event, 'id'> = {
       title: title.trim(),
       slug,
       description: description.trim(),
@@ -112,10 +111,24 @@ export default function NewEventPage() {
       createdAt,
     };
 
-    appendCustomEvent(newEvent);
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    setIsSubmitting(false);
-    router.push('/admin/etkinlikler');
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        alert(data.error ?? 'Etkinlik kaydedilemedi.');
+        setIsSubmitting(false);
+        return;
+      }
+      notifyEventsChanged();
+      router.push('/admin/etkinlikler');
+    } catch {
+      alert('Baglanti hatasi. Supabase tablosu ve .env.local anahtarlarini kontrol edin.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
